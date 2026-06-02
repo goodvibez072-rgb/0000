@@ -16,21 +16,19 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
-  // Lazy-load Vite and viteConfig to avoid loading Rollup at module scope
-  // These are only loaded in development mode
+  // Lazy-load Vite ONLY in development - this entire function is never called in production
+  // Do NOT import vite.config here to avoid bundling vite into production code
   const vite = await import("vite");
-  const viteConfigModule = await import("../vite.config");
-  const viteConfig = viteConfigModule.default;
   const viteLogger = vite.createLogger();
 
-  const serverOptions = {
-    ...viteConfig.server,
-    middlewareMode: true,
-  };
-
+  // Minimal vite server config - no reference to vite.config.ts
   const viteServer = await vite.createServer({
-    ...viteConfig,
     configFile: false,
+    root: path.resolve(process.cwd(), "client"),
+    appType: "custom",
+    server: {
+      middlewareMode: true,
+    },
     customLogger: {
       ...viteLogger,
       error: (msg: string, options?: any) => {
@@ -38,8 +36,6 @@ export async function setupVite(app: Express, server: Server) {
         // Don't exit process on Vite errors to keep server running
       },
     },
-    server: serverOptions,
-    appType: "custom",
   });
 
   app.use(viteServer.middlewares);
