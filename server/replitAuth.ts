@@ -18,7 +18,13 @@ declare module "express-session" {
 }
 
 // Utility functions for session database corruption handling
-const sessionsBackupDir = "./data/backups";
+// Derive data directory from env vars so it works in containers (Render/Fly) where /app is read-only
+const _dataDir = process.env.SESSIONS_PATH
+  ? dirname(process.env.SESSIONS_PATH)
+  : process.env.DATABASE_PATH
+  ? dirname(process.env.DATABASE_PATH)
+  : './data';
+const sessionsBackupDir = join(_dataDir, "backups");
 
 // Use same conservative corruption detection for sessions
 function isSessionSevereCorruption(error: any): boolean {

@@ -5,6 +5,7 @@ import cookie from 'cookie';
 import signature from 'cookie-signature';
 import Database from 'better-sqlite3';
 import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
 
 export interface WebSocketMessage {
   type: string;
@@ -48,7 +49,8 @@ class WebSocketManager {
   initialize(server: Server) {
     // Load and cache session secret once at initialization
     try {
-      this.sessionSecret = readFileSync('./data/session-secret.key', 'utf8').trim();
+      const _dataDir = process.env.SESSIONS_PATH ? dirname(process.env.SESSIONS_PATH) : process.env.DATABASE_PATH ? dirname(process.env.DATABASE_PATH) : './data';
+      this.sessionSecret = readFileSync(join(_dataDir, 'session-secret.key'), 'utf8').trim();
       console.log('[websocket] Session secret loaded successfully');
     } catch (error) {
       console.error('[websocket] CRITICAL: Failed to load session secret - authentication will fail:', error);

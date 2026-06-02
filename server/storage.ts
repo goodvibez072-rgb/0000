@@ -6475,7 +6475,7 @@ Note: This file prevents re-creation of admin users. Delete this file only if yo
 // Admin initialization functionality
 export async function initializeAdminUser(): Promise<void> {
   const isProduction = process.env.NODE_ENV === 'production';
-  const adminSentinelFile = './data/.admin-seeded';
+  const adminSentinelFile = join(dirname(process.env.DATABASE_PATH || './data/database.db'), '.admin-seeded');
   
   try {
     console.log('[init] 🔍 Checking for existing admin users...');
@@ -6734,7 +6734,7 @@ export async function initializeAdminUser(): Promise<void> {
 
 // Roles initialization functionality
 export async function initializeRoles(): Promise<void> {
-  const rolesSentinelFile = './data/.roles-seeded';
+  const rolesSentinelFile = join(dirname(process.env.DATABASE_PATH || './data/database.db'), '.roles-seeded');
   
   try {
     console.log('[roles-init] 🔍 Checking for existing roles...');
