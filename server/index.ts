@@ -7,6 +7,17 @@ import cookieParser from "cookie-parser";
 import { createBrotliCompress, createGzip, constants } from "zlib";
 import { Writable, pipeline } from "stream";
 
+// ⚠️ CRITICAL: Global error handlers MUST be at top of file, BEFORE any other code
+// These catch ANY error that would otherwise crash the process silently
+process.on('uncaughtException', (err) => {
+  console.error('FATAL UNCAUGHT EXCEPTION:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('FATAL UNHANDLED REJECTION at:', promise, 'reason:', reason);
+});
+
 // ⚠️ IMPORTANT: This project must always use a local SQLite database (./data/database.db).
 // Login, signup, and admin seeding must always work offline after download/re-upload.
 // Any agent working on this project in the future must preserve this setup.
@@ -428,25 +439,26 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Setup Replit Auth first
-  await setupAuth(app);
-  
-  // Initialize admin user automatically
-  await initializeAdminUser();
-  
-  // Initialize default roles with permissions
-  await initializeRoles();
-  
-  // Initialize owner role for first admin
-  const { storage } = await import("./storage");
-  await storage.initializeOwnerRole();
-  
-  // Initialize ad intensity setting
-  await storage.initializeAdIntensity();
-  
-  // SEO: Prerender middleware for crawlers (MUST be before Vite middleware)
-  const { prerenderMiddleware } = await import("./seo-prerender");
-  app.use(prerenderMiddleware);
+  try {
+    // Setup Replit Auth first
+    await setupAuth(app);
+    
+    // Initialize admin user automatically
+    await initializeAdminUser();
+    
+    // Initialize default roles with permissions
+    await initializeRoles();
+    
+    // Initialize owner role for first admin
+    const { storage } = await import("./storage");
+    await storage.initializeOwnerRole();
+    
+    // Initialize ad intensity setting
+    await storage.initializeAdIntensity();
+    
+    // SEO: Prerender middleware for crawlers (MUST be before Vite middleware)
+    const { prerenderMiddleware } = await import("./seo-prerender");
+    app.use(prerenderMiddleware);
   
   // SEO: Serve static files from public directory (sitemap.xml, robots.txt, etc.)
   // This allows search engines to access SEO files and enables browser caching
@@ -502,9 +514,11 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen(port, "0.0.0.0", () => {
-    log(`serving on http://0.0.0.0:${port}`);
+  const PORT = parseInt(process.env.PORT || '5000', 10);
+  const HOST = "0.0.0.0"; // CRITICAL: Explicitly bind to 0.0.0.0 for Render/container environments
+
+  server.listen({ port: PORT, host: HOST }, () => {
+    log(`✅ Server started successfully on http://${HOST}:${PORT}`);
   });
 
   // Initialize WebSocket server for real-time updates
@@ -535,4 +549,11 @@ app.use((req, res, next) => {
   }, AD_SCHEDULER_INTERVAL);
 
   log(`Ad scheduler initialized - will run every ${AD_SCHEDULER_INTERVAL / 1000 / 60} minutes`, "ad-scheduler");
+  } catch (error) {
+    console.error("❌ FAILED TO START SERVER:", error);
+    if (error instanceof Error) {
+      console.error("Stack trace:", error.stack);
+    }
+    process.exit(1);
+  }
 })();
