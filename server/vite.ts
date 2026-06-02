@@ -2,7 +2,6 @@ import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
 import { type Server } from "http";
-import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
 export function log(message: string, source = "express") {
@@ -17,8 +16,11 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
-  // Lazy-load Vite to avoid loading Rollup at module scope
+  // Lazy-load Vite and viteConfig to avoid loading Rollup at module scope
+  // These are only loaded in development mode
   const vite = await import("vite");
+  const viteConfigModule = await import("../vite.config");
+  const viteConfig = viteConfigModule.default;
   const viteLogger = vite.createLogger();
 
   const serverOptions = {
