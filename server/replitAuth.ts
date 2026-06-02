@@ -364,8 +364,13 @@ class SQLiteSessionStore extends session.Store {
 
 // Function to get or create a persistent session secret
 function getOrCreateSessionSecret(): string {
-  const secretFilePath = './data/session-secret.key';
-  const dataDir = './data';
+  // Derive data directory from env vars so it works in containers (Render/Fly) where /app is read-only
+  const dataDir = process.env.SESSIONS_PATH
+    ? dirname(process.env.SESSIONS_PATH)
+    : process.env.DATABASE_PATH
+    ? dirname(process.env.DATABASE_PATH)
+    : './data';
+  const secretFilePath = join(dataDir, 'session-secret.key');
   
   // Ensure data directory exists
   if (!existsSync(dataDir)) {
@@ -412,8 +417,13 @@ function getOrCreateSessionSecret(): string {
 
 // Function to get or create a persistent CSRF secret
 export function getOrCreateCsrfSecret(): string {
-  const secretFilePath = './data/csrf-secret.key';
-  const dataDir = './data';
+  // Derive data directory from env vars so it works in containers (Render/Fly) where /app is read-only
+  const dataDir = process.env.SESSIONS_PATH
+    ? dirname(process.env.SESSIONS_PATH)
+    : process.env.DATABASE_PATH
+    ? dirname(process.env.DATABASE_PATH)
+    : './data';
+  const secretFilePath = join(dataDir, 'csrf-secret.key');
   
   // Ensure data directory exists
   if (!existsSync(dataDir)) {

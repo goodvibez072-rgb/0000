@@ -942,6 +942,65 @@ function initializeSchema(sqliteInstance: Database.Database): void {
       CREATE INDEX IF NOT EXISTS "ads_active_idx" ON "advertisements" ("is_active");
     `);
 
+    // Create daily_rewards table for daily login reward system
+    sqliteInstance.exec(`
+      CREATE TABLE IF NOT EXISTS "daily_rewards" (
+        "id" TEXT PRIMARY KEY NOT NULL,
+        "day" INTEGER NOT NULL UNIQUE,
+        "coin_reward" INTEGER NOT NULL,
+        "bonus_multiplier" TEXT DEFAULT '1',
+        "is_special" TEXT NOT NULL DEFAULT 'false',
+        "special_description" TEXT,
+        "created_at" TEXT DEFAULT (datetime('now'))
+      );
+    `);
+
+    // Create user_daily_claims table for tracking daily reward claims
+    sqliteInstance.exec(`
+      CREATE TABLE IF NOT EXISTS "user_daily_claims" (
+        "id" TEXT PRIMARY KEY NOT NULL,
+        "user_id" TEXT NOT NULL,
+        "claim_date" TEXT NOT NULL,
+        "day" INTEGER NOT NULL,
+        "coins_earned" INTEGER NOT NULL,
+        "created_at" TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
+        UNIQUE ("user_id", "claim_date")
+      );
+      CREATE INDEX IF NOT EXISTS "user_daily_claims_user_idx" ON "user_daily_claims" ("user_id");
+    `);
+
+    // Create achievements table for gamification
+    sqliteInstance.exec(`
+      CREATE TABLE IF NOT EXISTS "achievements" (
+        "id" TEXT PRIMARY KEY NOT NULL,
+        "name" TEXT NOT NULL,
+        "description" TEXT NOT NULL,
+        "category" TEXT NOT NULL,
+        "requirement" TEXT NOT NULL,
+        "coin_reward" INTEGER DEFAULT 0,
+        "badge_icon" TEXT,
+        "is_hidden" TEXT NOT NULL DEFAULT 'false',
+        "display_order" INTEGER NOT NULL DEFAULT 0,
+        "created_at" TEXT DEFAULT (datetime('now'))
+      );
+    `);
+
+    // Create user_achievements table for tracking earned achievements
+    sqliteInstance.exec(`
+      CREATE TABLE IF NOT EXISTS "user_achievements" (
+        "id" TEXT PRIMARY KEY NOT NULL,
+        "user_id" TEXT NOT NULL,
+        "achievement_id" TEXT NOT NULL,
+        "earned_at" TEXT DEFAULT (datetime('now')),
+        "progress" TEXT,
+        FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
+        FOREIGN KEY ("achievement_id") REFERENCES "achievements" ("id") ON DELETE CASCADE,
+        UNIQUE ("user_id", "achievement_id")
+      );
+      CREATE INDEX IF NOT EXISTS "user_achievements_user_idx" ON "user_achievements" ("user_id");
+    `);
+
     // Run column migration after table creation
     console.log('[migration] Starting column drift migration...');
     migrateTableColumns(sqliteInstance, 'users', USERS_EXPECTED_COLUMNS);
