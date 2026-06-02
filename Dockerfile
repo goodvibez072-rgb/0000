@@ -7,8 +7,8 @@ FROM node:20-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Install build dependencies (Python for better-sqlite3 native compilation)
-RUN apk add --no-cache python3 make g++ sqlite
+# Install build dependencies (Python for better-sqlite3 native compilation, cairo/pixman for canvas)
+RUN apk add --no-cache python3 make g++ sqlite pkgconfig cairo-dev pango-dev libjpeg-turbo-dev giflib-dev pixman-dev
 
 # Copy package files
 COPY package*.json ./
@@ -25,13 +25,19 @@ RUN npm run build
 # Stage 2: Production
 FROM node:20-alpine AS production
 
-# Install runtime dependencies
+# Install runtime dependencies (including canvas dependencies)
 RUN apk add --no-cache \
     dumb-init \
     sqlite \
     python3 \
     make \
-    g++
+    g++ \
+    pkgconfig \
+    cairo-dev \
+    pango-dev \
+    libjpeg-turbo-dev \
+    giflib-dev \
+    pixman-dev
 
 # Create app user for security
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
