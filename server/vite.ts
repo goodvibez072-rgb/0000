@@ -19,6 +19,7 @@ export async function setupVite(app: Express, server: Server) {
   // Lazy-load Vite ONLY in development - this entire function is never called in production
   // Do NOT import vite.config here to avoid bundling vite into production code
   const vite = await import("vite");
+  const react = await import("@vitejs/plugin-react");
   const viteLogger = vite.createLogger();
 
   // Minimal vite server config - no reference to vite.config.ts
@@ -26,8 +27,16 @@ export async function setupVite(app: Express, server: Server) {
     configFile: false,
     root: path.resolve(process.cwd(), "client"),
     appType: "custom",
+    plugins: [react.default()],
+    resolve: {
+      alias: {
+        "@": path.resolve(process.cwd(), "client/src"),
+        "@shared": path.resolve(process.cwd(), "shared"),
+      },
+    },
     server: {
       middlewareMode: true,
+      allowedHosts: true,
     },
     customLogger: {
       ...viteLogger,

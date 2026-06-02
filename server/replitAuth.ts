@@ -159,7 +159,7 @@ class SQLiteSessionStore extends session.Store {
   constructor() {
     super();
     
-    const sessionDbPath = "./data/sessions.db";
+    const sessionDbPath = process.env.SESSIONS_PATH || "./data/sessions.db";
     const sessionDbDir = dirname(sessionDbPath);
     
     // Ensure sessions directory exists

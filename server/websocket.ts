@@ -57,7 +57,7 @@ class WebSocketManager {
 
     // Open and cache sessions database connection for better performance
     try {
-      this.sessionsDb = new Database('./data/sessions.db', { readonly: true });
+      this.sessionsDb = new Database(process.env.SESSIONS_PATH || './data/sessions.db', { readonly: true });
       console.log('[websocket] Sessions database connection established');
     } catch (error) {
       console.error('[websocket] CRITICAL: Failed to open sessions database - authentication will fail:', error);
