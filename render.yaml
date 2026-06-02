@@ -1,0 +1,68 @@
+# Render Blueprint for AmourScans
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Web Service - Full-stack Node.js application
+  - type: web
+    name: amourscans
+    runtime: node
+    plan: free  # Can upgrade to starter/standard for production
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_PATH
+        value: /data/database.db
+      # PORT is automatically set by Render - do not override
+      - key: PRODUCTION_URL
+        sync: false  # Set in Render dashboard to your actual URL (e.g., https://amourscans.onrender.com)
+      # Optional environment variables (set in Render dashboard):
+      # - ADMIN_USERNAME (default: admin)
+      # - ADMIN_EMAIL (recommended: your email)
+      # - ADMIN_PASSWORD (auto-generated if not set)
+      # - SENDGRID_API_KEY (for email functionality)
+      # - STRIPE_SECRET_KEY (for payments)
+      # - STRIPE_PUBLISHABLE_KEY (for payments)
+      # - GOOGLE_CLIENT_ID (for OAuth)
+      # - GOOGLE_CLIENT_SECRET (for OAuth)
+      # - DISCORD_CLIENT_ID (for OAuth)
+      # - DISCORD_CLIENT_SECRET (for OAuth)
+    
+    # Persistent disk for SQLite database
+    # CRITICAL: This is required for SQLite database persistence
+    disk:
+      name: amourscans-data
+      mountPath: /data
+      sizeGB: 1  # Free tier allows 1GB
+
+    # Health check configuration
+    healthCheckPath: /api/health
+
+    # Auto-deploy from Git repository
+    autoDeploy: true
+
+    # Region (can be oregon, frankfurt, singapore, ohio)
+    region: oregon
+
+# Database Management Notes:
+# 1. The /data directory is persisted across deployments
+# 2. Database file will be created automatically at /data/database.db
+# 3. To access the database, use Render Shell: https://render.com/docs/shell
+# 4. Backup strategy: Use the db:backup script via Render Shell
+
+# Deployment Instructions:
+# 1. Create Render account: https://dashboard.render.com/register
+# 2. Click "New +" → "Blueprint"
+# 3. Connect your GitHub repository
+# 4. Select this render.yaml file
+# 5. Set environment variables in the dashboard
+# 6. Click "Apply" to deploy
+# 7. Wait 2-5 minutes for build and deployment
+# 8. Access your app at the provided .onrender.com URL
+
+# Important Notes:
+# - Free tier spins down after 15 minutes of inactivity
+# - First request after spin-down will be slow (cold start)
+# - Persistent disk ensures database survives deployments
+# - Upgrade to paid plan for always-on service and faster performance

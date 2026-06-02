@@ -1,0 +1,102 @@
+# Fly.io configuration for AmourScans
+# Deploy: fly launch (first time) or fly deploy (updates)
+# https://fly.io/docs/reference/configuration/
+
+# IMPORTANT: Change 'amourscans' to your preferred app name before first deployment
+# This must be unique across all Fly.io (if taken, try amourscans-yourname)
+app = "amourscans"
+
+# Choose region closest to your users
+# See all regions: https://fly.io/docs/reference/regions/
+# Popular options: sjc (San Jose), iad (Virginia), lhr (London), syd (Sydney)
+primary_region = "sjc"
+
+[build]
+  [build.args]
+    NODE_VERSION = "20"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+  DATABASE_PATH = "/data/database.db"
+  SESSIONS_PATH = "/data/sessions.db"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true      # Machines sleep when idle (free tier)
+  auto_start_machines = true     # Wake up on incoming requests
+  min_machines_running = 0       # 0 = can sleep fully (saves costs)
+  processes = ["app"]
+
+  # Health check to monitor app status
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/api/health"
+
+# Persistent volume for SQLite database
+# CRITICAL: This is where your database lives permanently
+[mounts]
+  source = "amourscans_data"     # Volume name (create before first deploy)
+  destination = "/data"           # Mount point in container
+  initial_size = "1gb"           # 3GB free on free tier
+
+# VM configuration (free tier limits)
+[[vm]]
+  cpu_kind = "shared"            # Free tier uses shared CPUs
+  cpus = 1                       # 1 vCPU
+  memory_mb = 256                # 256MB RAM (can increase to 512MB on free tier)
+
+# ==================================================================
+# DEPLOYMENT INSTRUCTIONS
+# ==================================================================
+# 
+# STEP 1: Install Fly.io CLI
+# Mac/Linux: curl -L https://fly.io/install.sh | sh
+# Windows: iwr https://fly.io/install.ps1 -useb | iex
+#
+# STEP 2: Sign up / Login
+# flyctl auth signup    (first time)
+# flyctl auth login     (if you have account)
+#
+# STEP 3: Update app name above (line 7) to something unique
+# 
+# STEP 4: Create persistent volume (BEFORE first deploy)
+# flyctl volumes create amourscans_data --region sjc --size 1
+#
+# STEP 5: Set environment secrets (optional for first deploy)
+# flyctl secrets set STRIPE_SECRET_KEY=sk_live_xxxxx
+# flyctl secrets set ADMIN_EMAIL=admin@amourscans.com
+#
+# STEP 6: Deploy your app
+# flyctl deploy
+#
+# STEP 7: Open your app
+# flyctl open
+#
+# ==================================================================
+# CUSTOM DOMAIN SETUP (amourscans.com)
+# ==================================================================
+#
+# After deploying, add your custom domain:
+# 1. flyctl certs create amourscans.com
+# 2. flyctl certs create www.amourscans.com
+# 3. Get DNS records: flyctl certs show amourscans.com
+# 4. Add those records to Hostinger (see DNS_SETUP.md)
+# 5. Wait for SSL cert (automatic, ~1-5 minutes)
+#
+# ==================================================================
+# USEFUL COMMANDS
+# ==================================================================
+#
+# View logs:        flyctl logs
+# SSH into VM:      flyctl ssh console
+# Check status:     flyctl status
+# Scale memory:     flyctl scale memory 512
+# List volumes:     flyctl volumes list
+# Backup database:  flyctl ssh console -C "sqlite3 /data/database.db .dump > /data/backup.sql"
+#
+# ==================================================================

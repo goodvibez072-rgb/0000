@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Development files
+.git
+.gitignore
+.env
+.env.*
+
+# Build artifacts (will be rebuilt)
+dist
+
+# Documentation
+*.md
+!README.md
+
+# Tests
+tests
+*.test.ts
+*.spec.ts
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp
+temp
+*.log
+
+# Database files (will be created in volume)
+data/*.db
+data/*.db-*
+data/backups
+
+# Uploads (manage separately)
+uploads/*
+
+# Replit-specific
+.replit
+replit.nix

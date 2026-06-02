@@ -1,0 +1,16 @@
+# MangaVerse Robots.txt
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Disallow admin and private pages
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/*
+
+# Sitemap location
+Sitemap: https://9b27d60e-b437-487d-af8f-bc8a77299ab7-00-nqww76bojtgk.spock.replit.dev/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1

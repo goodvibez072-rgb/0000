@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Environment and secrets
+.env
+.env.local
+.env.production
+.env.development
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+/tmp/
+
+# Cache and temporary files
+.cache/
+*.tmp
+.DS_Store
+.vscode/
+.idea/
+
+# Documentation (internal development docs)
+docs/
+SESSION_SUMMARY.md
+progress.md
+COMPREHENSIVE_BUG_REPORT.md
+
+# Test and development assets
+attached_assets/
+uploads/*.png
+uploads/*.jpg
+uploads/*.jpeg
+uploads/*.gif
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Replit
+.replit
+.upm
+.config/
+.local/
+.cache/
+
+# Backups
+*.backup
+backup/
+backups/

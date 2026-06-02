@@ -1,0 +1,4 @@
+Admin user seeded on 2025-09-20T19:23:36.299Z
+Username: admin
+Email: admin@localhost.com
+Note: This file prevents re-creation of admin users. Delete this file only if you want to reset admin seeding.
